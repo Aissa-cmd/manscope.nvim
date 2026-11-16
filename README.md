@@ -26,6 +26,8 @@ That split is Telescope's horizontal layout (`mirror` off). It fits man pages be
 
 ### lazy.nvim
 
+`desc` is the label [which-key](https://github.com/folke/which-key.nvim) shows. LazyVim's popup is which-key: press `<leader>` and pause. `m` is the man group, and `<leader>sM` is the Man Pages row already listed under Search.
+
 ```lua
 {
   "Aissa-cmd/manscope.nvim",
@@ -36,11 +38,32 @@ That split is Telescope's horizontal layout (`mirror` off). It fits man pages be
   cmd = "Manscope",
   keys = {
     { "<leader>mm", "<cmd>Manscope<cr>", desc = "Search man pages" },
-    { "<leader>mw", "<cmd>Manscope cword<cr>", desc = "Man page for word under cursor" },
+    { "<leader>mw", "<cmd>Manscope cword<cr>", desc = "Word under cursor" },
+    { "<leader>mh", "<cmd>Manscope history<cr>", desc = "Recent man pages" },
+    { "<leader>mH", "<cmd>Manscope headings<cr>", desc = "Headings" },
+    { "<leader>ml", "<cmd>Manscope lines<cr>", desc = "Search in page" },
+    { "<leader>sM", "<cmd>Manscope<cr>", desc = "Man Pages" },
   },
+  init = function()
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "LazyLoad",
+      callback = function(event)
+        if event.data ~= "which-key.nvim" then
+          return
+        end
+        local ok, wk = pcall(require, "which-key")
+        if ok and wk.add then
+          wk.add({ { "<leader>m", group = "man", icon = { icon = "", color = "cyan" } } })
+        end
+        return true
+      end,
+    })
+  end,
   opts = {},
 }
 ```
+
+`<leader>sM` is where LazyVim already puts Man Pages (`Telescope man_pages`). This spec points that row at Manscope. `<leader>sm` is still Jump to Mark.
 
 ### packer
 
@@ -57,7 +80,7 @@ use({
 })
 ```
 
-Calling `setup` is optional. The defaults already put search on the left and the page on the right.
+Calling `setup` registers those leader keys. With lazy.nvim, `opts = {}` does that, and the `keys` list above is what which-key shows before the plugin loads.
 
 ## Use
 
@@ -87,7 +110,7 @@ From Telescope:
 require("telescope").load_extension("manscope")
 ```
 
-Inside the catalog:
+Inside the catalog, Telescope's own which-key (`?` in normal mode, `<C-/>` in insert mode) lists the Manscope keys:
 
 | Key | Action |
 | --- | --- |
@@ -131,6 +154,18 @@ require("manscope").setup({
     cycle_section = "<M-s>",
     headings = "<M-h>",
     lines = "<M-l>",
+  },
+  -- false turns the leader keys off. desc is the which-key label.
+  keys = {
+    { "<leader>mm", "search", desc = "Search man pages" },
+    { "<leader>mw", "cword", desc = "Word under cursor" },
+    { "<leader>mh", "history", desc = "Recent man pages" },
+    { "<leader>mH", "headings", desc = "Headings" },
+    { "<leader>ml", "lines", desc = "Search in page" },
+    { "<leader>sM", "search", desc = "Man Pages" },
+  },
+  which_key = {
+    { "<leader>m", group = "man" },
   },
 })
 ```

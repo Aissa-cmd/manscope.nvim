@@ -4,6 +4,7 @@ local M = {}
 
 function M.setup(opts)
   config.setup(opts)
+  require("manscope.keys").apply()
 end
 
 function M.search(opts)
