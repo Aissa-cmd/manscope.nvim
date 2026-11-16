@@ -1,0 +1,150 @@
+*manscope.txt*  Search man pages with Telescope
+*manscope* *manscope.nvim*
+
+==============================================================================
+CONTENTS                                                     *manscope-contents*
+
+1. Introduction ............................. |manscope-introduction|
+2. Commands ................................. |manscope-commands|
+3. Mappings ................................. |manscope-mappings|
+4. Setup .................................... |manscope-setup|
+5. Telescope ................................ |manscope-telescope|
+
+==============================================================================
+1. Introduction                                       *manscope-introduction*
+
+Manscope is a Telescope picker for man pages. The prompt and the result list
+are on the left. The formatted page is on the right. That is Telescope's
+horizontal layout with `mirror` off.
+
+The result list is the apropos catalog: page name, section, and the short
+description. Fuzzy matching uses all three. The preview runs `man` at the
+preview width, strips nroff overstrike, and uses the |man| filetype.
+
+Telescope's builtin |telescope.builtin.man_pages()| lists section 1 only and
+matches the page name. Manscope lists every section by default.
+
+Requirements: Neovim 0.9 or newer, telescope.nvim, plenary.nvim, and `man` /
+`apropos` on $PATH. Current telescope.nvim requires Neovim 0.11, so use a
+Telescope release that matches your editor. `col` is optional and cleans
+the preview.
+
+==============================================================================
+2. Commands                                               *manscope-commands*
+
+:Manscope [query]                                                *:Manscope*
+    Open the catalog. [query] is the initial prompt text.
+
+:Manscope cword
+    Use the word under the cursor as the query.
+
+:Manscope section {section} [query]
+    Start with that section selected. A numeric prefix also matches extended
+    sections: section 3 includes 3perl. It does not include section 10.
+
+:Manscope history
+    Pages opened from Manscope, newest first.
+
+:Manscope headings [name(section)]
+:Manscope headings [{section} {name}]
+    Headings of a page. With no argument, use the current |man| buffer.
+    The preview scrolls to the heading. <CR> opens the page there.
+
+:Manscope lines [name(section)]
+:Manscope lines [{section} {name}]
+    Same layout, one row per line of the page.
+
+==============================================================================
+3. Mappings                                               *manscope-mappings*
+
+These are added inside the catalog picker. Telescope's own keys stay:
+
+    <CR>        Open with :Man
+    <C-x>       Horizontal split
+    <C-v>       Vertical split
+    <C-t>       New tab
+    <C-u>       Scroll the preview up
+    <C-d>       Scroll the preview down
+
+    <M-s>       Cycle the section filter          *manscope-cycle*
+    <M-h>       Headings of the selected page     *manscope-headings*
+    <M-l>       Search lines of the selected page *manscope-lines*
+
+Set `mappings` in |manscope-setup| to change or disable a key. An empty
+string disables that key.
+
+==============================================================================
+4. Setup                                                     *manscope-setup*
+
+>lua
+    require("manscope").setup({
+      sections = nil,
+      section_match = "prefix",
+      open = "current",
+      man_cmd = nil,
+      layout = {
+        width = 0.92,
+        height = 0.88,
+        preview_width = 0.58,
+        prompt_position = "top",
+        mirror = false,
+      },
+      history = { enabled = true, limit = 50, path = nil },
+      mappings = {
+        cycle_section = "<M-s>",
+        headings = "<M-h>",
+        lines = "<M-l>",
+      },
+    })
+<
+
+sections ~
+    Section numbers in the |manscope-cycle| list. `nil` (the default) shows
+    every page apropos returns and cycles through sections 1–9.
+    `section_match` `"prefix"` lets `"1"` match `"1"` and `"1ssl"` but not
+    `"10"`. `"exact"` matches the whole section token.
+
+open ~
+    How <CR> opens a page: `"current"`, `"horizontal"`, `"vertical"`, or
+    `"tab"`. <C-x>, <C-v>, and <C-t> are unchanged.
+
+man_cmd ~
+    Catalog command. The default is `{ "apropos", "" }` on Linux and
+    `{ "apropos", "." }` on macOS and the BSDs.
+
+layout.mirror ~
+    `false` keeps search on the left and the page on the right. `true`
+    swaps the two sides.
+
+history ~
+    Remember opened pages in `stdpath("data")/manscope/history.json`, or in
+    `history.path` when that is set.
+
+:checkhealth manscope
+    Reports Neovim, `man`, `apropos`, `col`, and telescope.nvim.
+
+==============================================================================
+5. Telescope                                             *manscope-telescope*
+
+>lua
+    require("telescope").load_extension("manscope")
+<
+
+>vim
+    :Telescope manscope
+    :Telescope manscope history
+    :Telescope manscope headings
+    :Telescope manscope lines
+<
+
+Extension config is the same table as |manscope-setup|:
+
+>lua
+    require("telescope").setup({
+      extensions = {
+        manscope = { layout = { preview_width = 0.65 } },
+      },
+    })
+<
+
+vim:tw=78:ts=8:sw=2:sts=2:et:ft=help:norl:
