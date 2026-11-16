@@ -138,6 +138,57 @@ check(health_text:find("Neovim 0.9 or newer", 1, true) ~= nil, "health check did
 check(health_text:find("apropos is on PATH", 1, true) ~= nil, "health check did not report apropos")
 check(health_text:find("search on the left", 1, true) ~= nil, "health check did not report the layout")
 
+vim.g.mapleader = " "
+local keys = require("manscope.keys")
+local cfg = require("manscope.config")
+
+local function map_by_desc(desc)
+  for _, map in ipairs(vim.api.nvim_get_keymap("n")) do
+    if map.desc == desc then
+      return map
+    end
+  end
+end
+
+cfg.reset()
+keys.reset()
+package.loaded["which-key"] = nil
+require("manscope").setup({ keys = false, which_key = false })
+check(map_by_desc("Search man pages") == nil, "keys = false still created a leader map")
+
+cfg.reset()
+keys.reset()
+local added
+package.loaded["which-key"] = {
+  add = function(spec)
+    added = spec
+  end,
+}
+require("manscope").setup()
+local search_map = map_by_desc("Search man pages")
+check(search_map ~= nil, "<leader>mm Search man pages is not mapped")
+if search_map then
+  check(tostring(search_map.lhs):find("mm", 1, true) ~= nil, "search map lhs is " .. tostring(search_map.lhs))
+end
+check(map_by_desc("Man Pages") ~= nil, "<leader>sM Man Pages is not mapped")
+check(map_by_desc("Word under cursor") ~= nil, "word-under-cursor map is missing")
+check(added and added[1] and added[1].group == "man", "which-key did not receive the man group")
+
+cfg.reset()
+keys.reset()
+added = nil
+package.loaded["which-key"] = nil
+require("manscope").setup({ keys = false })
+vim.api.nvim_exec_autocmds("User", { pattern = "LazyLoad", data = "other.nvim" })
+check(added == nil, "which-key group was registered for an unrelated plugin")
+package.loaded["which-key"] = {
+  add = function(spec)
+    added = spec
+  end,
+}
+vim.api.nvim_exec_autocmds("User", { pattern = "LazyLoad", data = "which-key.nvim" })
+check(added and added[1] and added[1].group == "man", "LazyLoad did not register the which-key group")
+
 if failed > 0 then
   io.stderr:write(failed .. " nvim_spec failure(s)\n")
   vim.cmd("cquit " .. math.min(failed, 99))

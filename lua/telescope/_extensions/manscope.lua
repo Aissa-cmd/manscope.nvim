@@ -17,7 +17,7 @@ end
 
 return telescope.register_extension({
   setup = function(ext_config)
-    require("manscope.config").setup(ext_config)
+    require("manscope").setup(ext_config)
   end,
   exports = {
     manscope = call("search"),

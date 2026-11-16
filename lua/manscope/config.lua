@@ -29,17 +29,40 @@ local defaults = {
     headings = "<M-h>",
     lines = "<M-l>",
   },
+  -- Leader keys. `desc` is the label which-key shows. false disables them.
+  -- <leader>sM is the "Man Pages" row already in LazyVim's Search menu.
+  keys = {
+    { "<leader>mm", "search", desc = "Search man pages" },
+    { "<leader>mw", "cword", desc = "Word under cursor" },
+    { "<leader>mh", "history", desc = "Recent man pages" },
+    { "<leader>mH", "headings", desc = "Headings" },
+    { "<leader>ml", "lines", desc = "Search in page" },
+    { "<leader>sM", "search", desc = "Man Pages" },
+  },
+  -- Group title in the which-key popup. false skips the which-key call.
+  which_key = {
+    { "<leader>m", group = "man", icon = { icon = "", color = "cyan" } },
+  },
 }
 
 local values
 
+local function assign_list(opts, key)
+  if opts[key] == nil then
+    return
+  end
+  if opts[key] == false then
+    values[key] = false
+  else
+    values[key] = vim.deepcopy(opts[key])
+  end
+end
+
 local function assign_lists(opts)
-  if opts.sections ~= nil then
-    values.sections = vim.deepcopy(opts.sections)
-  end
-  if opts.man_cmd ~= nil then
-    values.man_cmd = vim.deepcopy(opts.man_cmd)
-  end
+  assign_list(opts, "sections")
+  assign_list(opts, "man_cmd")
+  assign_list(opts, "keys")
+  assign_list(opts, "which_key")
 end
 
 function M.setup(opts)

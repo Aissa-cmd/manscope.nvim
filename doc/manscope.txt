@@ -70,8 +70,24 @@ These are added inside the catalog picker. Telescope's own keys stay:
     <M-h>       Headings of the selected page     *manscope-headings*
     <M-l>       Search lines of the selected page *manscope-lines*
 
-Set `mappings` in |manscope-setup| to change or disable a key. An empty
-string disables that key.
+Set `mappings` in |manscope-setup| to change or disable a picker key. An
+empty string disables that key.
+
+Leader keys are registered by setup() and show up in which-key. That is the
+popup LazyVim opens when you pause after the leader key:
+
+    <leader>mm   Search man pages
+    <leader>mw   Word under cursor
+    <leader>mh   Recent man pages
+    <leader>mH   Headings
+    <leader>ml   Search in page
+    <leader>sM   Man Pages          (LazyVim's Search menu)
+
+<leader>m is the which-key group "man". <leader>sM replaces LazyVim's
+built-in Telescope man_pages binding. <leader>sm is still Jump to Mark.
+Set `keys` or `which_key` to false to skip that registration.
+Inside the picker, ? and <C-/> open Telescope's which-key for <M-s>,
+<M-h>, and <M-l>.
 
 ==============================================================================
 4. Setup                                                     *manscope-setup*
@@ -94,6 +110,17 @@ string disables that key.
         cycle_section = "<M-s>",
         headings = "<M-h>",
         lines = "<M-l>",
+      },
+      keys = {
+        { "<leader>mm", "search", desc = "Search man pages" },
+        { "<leader>mw", "cword", desc = "Word under cursor" },
+        { "<leader>mh", "history", desc = "Recent man pages" },
+        { "<leader>mH", "headings", desc = "Headings" },
+        { "<leader>ml", "lines", desc = "Search in page" },
+        { "<leader>sM", "search", desc = "Man Pages" },
+      },
+      which_key = {
+        { "<leader>m", group = "man" },
       },
     })
 <
